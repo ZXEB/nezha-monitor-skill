@@ -76,6 +76,7 @@ python3 "<base_dir>/scripts/nezha_history.py" <server_id> [metric] [period]
 - `period`: 1d | 7d | 30d（默认 1d）
 - 生成 `nezha_history_<ID>_<metric>.png`
 - 若提示"无历史数据"：TSDB 刚启用，数据积累中，稍后再试
+- ⚠️ TSDB 未启用时，metrics 接口返回空 `data_points`，启用方法见下方「常见问题」
 
 ### 纯文本查询（调试/轻量）
 
@@ -91,6 +92,8 @@ python3 "<base_dir>/scripts/nezha.py" raw       # 原始 JSON
 - **中文乱码/方块**：未装中文字体，执行 `apt-get install -y fonts-noto-cjk`
 - **截图空白**：playwright chromium 未安装，执行 `python3 -m playwright install chromium --with-deps`
 - **401 认证失败**：检查 `.env` 的 `NEZHA_TOKEN` 是否正确、是否有权限
+- **历史图无数据 / metrics 返回空 data_points**：TSDB 未启用。在 Dashboard 配置文件（docker 部署时在挂载的 `config.yaml`，如 `/opt/nezha/dashboard/data/config.yaml`）中把 `tsdb: {}` 改为带 `data_path`（如 `tsdb: {data_path: data/tsdb}`），重启 Dashboard 容器生效；用 `GET /api/v1/setting` 验证 `tsdb_enabled: true`
+- **删除服务器记录**：`DELETE /api/v1/server/<ID>` 不存在，正确接口是 `POST /api/v1/batch-delete/server`，body 传**纯数组**（如 `[7]`），不是 JSON 对象
 - **卡片样式**：`nezha_render.py` 用 playwright 截图 HTML 模板，模板自动生成在脚本同目录，可自行调整配色
 
 ## 技术要点

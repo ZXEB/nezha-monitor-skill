@@ -19,6 +19,14 @@
 
 ## 🚀 安装
 
+### 0. 🤖 AI 一键安装（推荐给 AI agent 用户）
+
+把下面这段提示词发给任何能操作终端的 AI agent（Codex / Claude / 另一个 cow / 其他 agent），它自己会读仓库、自己装：
+
+> 请在这台服务器上安装 GitHub 仓库 https://github.com/ZXEB/nezha-monitor-skill 的技能。先读仓库里的 INSTALL_PROMPT.md 和 README.md，然后按步骤操作。哪吒面板地址（NEZHA_URL）和 API Token（NEZHA_TOKEN）稍后我提供给你。
+
+AI 会自主完成：下载 → 装依赖 → 向你要面板凭证 → 写 `.env` → 实际跑通验证 → 汇报。
+
 ### 1. 安装技能
 
 把本仓库的 `nezha-monitor/` 目录（或 `.skill` 包）放到你的技能目录：
