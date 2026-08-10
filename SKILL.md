@@ -98,6 +98,6 @@ python3 "<base_dir>/scripts/nezha.py" raw       # 原始 JSON
 
 ## 技术要点
 
-- 哪吒 API 实时数据在 `state` 字段，硬件总量在 `host` 字段，地区在 `geoip`
+- 哪吒 API 实时指标快照在 `state` 字段，硬件总量在 `host` 字段，地区在 `geoip`。⚠️ **`state` 是缓存快照，服务器失联后不会清空，绝不能用来判断在线/离线**；判断在线/失联必须用 `last_active`（最后上报时间，建议 5 分钟阈值），参考 `scripts/nezha_render.py` 的 `is_server_online()`
 - 历史数据接口：`/api/v1/server/<ID>/metrics?metric=<m>&period=<p>`
 - 中文渲染：matplotlib 需加载 Noto CJK 字体（Droid Sans Fallback 与 matplotlib 3.11 不兼容）
