@@ -15,9 +15,26 @@ import sys
 import json
 import urllib.request
 import datetime
+from datetime import timezone
 
 BASE_URL = os.environ.get("NEZHA_URL", "http://103.236.70.18:8008").rstrip("/")
 TOKEN = os.environ.get("NEZHA_TOKEN", "")
+
+ONLINE_THRESHOLD_SECONDS = 300  # 超过5分钟无上报视为离线（state 是缓存，不可用于在线判断）
+
+
+def is_server_online(s):
+    """用 last_active（真实上报时间）判断在线，state 缓存不可靠"""
+    la = s.get("last_active", "")
+    if not la or la.startswith("0001"):  # 空/初始值 = 从未上报
+        return False
+    try:
+        t = datetime.datetime.fromisoformat(la.replace("Z", "+00:00"))
+        if t.tzinfo is None:
+            t = t.replace(tzinfo=timezone.utc)
+        return (datetime.datetime.now(timezone.utc) - t).total_seconds() < ONLINE_THRESHOLD_SECONDS
+    except Exception:
+        return False
 
 _env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
 if os.path.exists(_env_path):
@@ -128,7 +145,7 @@ CSS = """
 def build_status_html(servers):
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     total = len(servers)
-    online = sum(1 for s in servers if s.get("state"))
+    online = sum(1 for s in servers if is_server_online(s))
     offline = total - online
 
     rows = []
@@ -148,7 +165,7 @@ def build_status_html(servers):
         cpu = st.get("cpu", 0) or 0
         mem_pct = (mem_used / mem_total * 100) if mem_total else 0
         disk_pct = (disk_used / disk_total * 100) if disk_total else 0
-        is_online = bool(st)
+        is_online = is_server_online(s)
         status_html = ('<span class="status online"><span class="dot green"></span>在线</span>'
                        if is_online else
                        '<span class="status offline"><span class="dot red"></span>离线</span>')
@@ -223,7 +240,7 @@ def build_detail_html(s):
     disk_pct = (disk_used / disk_total * 100) if disk_total else 0
     swap_pct = (swap_used / swap_total * 100) if swap_total else 0
 
-    is_online = bool(st)
+    is_online = is_server_online(s)
     status_html = ('<span class="status online"><span class="dot green"></span>在线</span>'
                    if is_online else
                    '<span class="status offline"><span class="dot red"></span>离线</span>')
